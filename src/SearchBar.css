@@ -1,0 +1,38 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  max-width: 400px;
+  margin: 20px 20px;
+  background-color: #f0f0f0;
+  border-radius: 20px;
+  padding: 2px 12px;
+}
+
+input {
+  flex: 1;
+  border: none;
+  padding: 8px;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #008080;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.search-title {
+  font-size: 20px;
+  font-weight: bold;
+  font-family: "Lucida Sans Unicode", sans-serif;
+  color: #008080;
+  margin-bottom: 10px;
+}

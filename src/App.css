@@ -1,3 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap");
+
+body {
+  background-color: #f0f8ff; /* Soft blue */
+  margin: 0;
+  font-family: "Dancing Script", cursive;
+}
+
+h1 {
+  font-family: "Dancing Script", cursive;
+  font-size: 3em;
+  color: steelblue;
+  text-align: left;
+  text-decoration-style: wavy;
+  margin-bottom: 20px;
+  margin-left: 40px;
+}
+
+.top-bar {
+  background-color: #b0c4de; /* Dark blue color */
+  height: 50px; /* Set the height of the bar */
+  width: 100%; /* Take up the full width */
+}
+
 .App {
   text-align: center;
 }
