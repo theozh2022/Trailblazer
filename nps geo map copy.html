@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>National Parks Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #80ced6; /* Set the background color of the body to steel blue */
+      }
+
+      #map {
+        height: 82vh;
+        background-color: #80ced6; /* Set the background color of the map to steel blue */
+      }
+
+      #parkInfo {
+        margin-top: 0px;
+        padding: 5px 10px;
+        background-color: #80ced6; /* Set the background color of the text info to steel blue */
+        border-radius: 8px;
+        color: white; /* Set the text color to white for better visibility */
+      }
+
+      #parkInfo h3 {
+        color: #333;
+      }
+
+      #parkInfo p {
+        margin: 2px 0;
+        color: #555;
+      }
+
+      #stateSelect {
+        font-size: 16px;
+        padding: 8px;
+        border-radius: 5px;
+        background-color: white; /* Set the background color of the dropdown menu to steel blue */
+        color: black; /* Set the text color to white for better visibility */
+      }
+
+      .legend {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background-color: white;
+        padding: 10px;
+        border-radius: 8px;
+      }
+
+      .legend-item {
+        margin-bottom: 5px;
+        position: relative;
+        padding-left: 20px;
+      }
+
+      .legend-circle {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: inline-block;
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="padding: 10px">
+      <label for="stateSelect">Select State:</label>
+      <select id="stateSelect" onchange="changeState()">
+        <option value="al">Alabama</option>
+        <option value="ak">Alaska</option>
+        <option value="az">Arizona</option>
+        <option value="ar">Arkansas</option>
+        <option value="ca">California</option>
+        <option value="co">Colorado</option>
+        <option value="ct">Connecticut</option>
+        <option value="de">Delaware</option>
+        <option value="fl">Florida</option>
+        <option value="ga">Georgia</option>
+        <option value="hi">Hawaii</option>
+        <option value="id">Idaho</option>
+        <option value="il">Illinois</option>
+        <option value="in">Indiana</option>
+        <option value="ia">Iowa</option>
+        <option value="ks">Kansas</option>
+        <option value="ky">Kentucky</option>
+        <option value="la">Louisiana</option>
+        <option value="me">Maine</option>
+        <option value="md">Maryland</option>
+        <option value="ma">Massachusetts</option>
+        <option value="mi">Michigan</option>
+        <option value="mn">Minnesota</option>
+        <option value="ms">Mississippi</option>
+        <option value="mo">Missouri</option>
+        <option value="mt">Montana</option>
+        <option value="ne">Nebraska</option>
+        <option value="nv">Nevada</option>
+        <option value="nh">New Hampshire</option>
+        <option value="nj">New Jersey</option>
+        <option value="nm">New Mexico</option>
+        <option value="ny">New York</option>
+        <option value="nc">North Carolina</option>
+        <option value="nd">North Dakota</option>
+        <option value="oh">Ohio</option>
+        <option value="ok">Oklahoma</option>
+        <option value="or">Oregon</option>
+        <option value="pa">Pennsylvania</option>
+        <option value="ri">Rhode Island</option>
+        <option value="sc">South Carolina</option>
+        <option value="sd">South Dakota</option>
+        <option value="tn">Tennessee</option>
+        <option value="tx">Texas</option>
+        <option value="ut">Utah</option>
+        <option value="vt">Vermont</option>
+        <option value="va">Virginia</option>
+        <option value="wa">Washington</option>
+        <option value="wv">West Virginia</option>
+        <option value="wi">Wisconsin</option>
+        <option value="wy">Wyoming</option>
+      </select>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="parkInfo">
+      <h3>Park Information</h3>
+      <p id="parkName"></p>
+      <p id="totalParks"></p>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-circle" style="background-color: #f18973"></span>
+        National Parks
+      </div>
+      <div class="legend-item">
+        <span class="legend-circle" style="background-color: #0b8457"></span>
+        National Forests
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      const apiKey = "EuMlTootGBcfp1i57CvVcYIJJ6d1J8yZjASqI8IG"
+      const baseUrl = "https://developer.nps.gov/api/v1/parks"
+      let map
+
+      const queryParks = (stateCode) => {
+        fetch(`${baseUrl}?stateCode=${stateCode}&api_key=${apiKey}`)
+          .then((response) => response.json())
+          .then((data) => {
+            clearMarkers()
+            displayParksOnMap(data.data)
+            displayParkInfo(data.data)
+          })
+          .catch((error) => console.error("Error fetching data:", error))
+      }
+
+      const displayParksOnMap = (parks) => {
+        parks.forEach((park) => {
+          const { latitude, longitude, fullName, url, images } = park
+          if (latitude && longitude) {
+            const popupContent = `<b>${fullName}</b><br>`
+            if (images && images.length > 0) {
+              const imageUrl = images[0].url // Assuming the first image is used
+              const parkImage = `<img src="${imageUrl}" alt="${fullName}" style="max-width: 100%; height: auto;">`
+              const parkLink = url
+                ? `<a href="${url}" target="_blank">Visit official website</a>`
+                : ""
+              L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup(popupContent + parkImage + parkLink, {
+                  minWidth: 200,
+                })
+            } else {
+              const parkLink = url
+                ? `<a href="${url}" target="_blank">Visit official website</a>`
+                : ""
+              L.marker([latitude, longitude])
+                .addTo(map)
+                .bindPopup(popupContent + parkLink, { minWidth: 200 })
+            }
+          }
+        })
+      }
+
+      const displayParkInfo = (parks) => {
+        const totalParks = document.getElementById("totalParks")
+
+        if (parks.length > 0) {
+          const firstPark = parks[0]
+          totalParks.textContent = `Total National Parks in State: ${parks.length}`
+        } else {
+          parkName.textContent = "No parks found in the selected state."
+          totalParks.textContent = ""
+        }
+      }
+
+      const clearMarkers = () => {
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Marker) {
+            map.removeLayer(layer)
+          }
+        })
+      }
+
+      const changeState = () => {
+        const stateSelect = document.getElementById("stateSelect")
+        const selectedState = stateSelect.value
+        queryParks(selectedState)
+      }
+
+      // Initial query based on the default state (Alabama)
+      map = L.map("map").setView([39.8283, -98.5795], 4)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map)
+
+      queryParks("al")
+
+      const mapUrl =
+        "https://raw.githubusercontent.com/theozh2022/Trailblazer/main/us-census17-geo.json"
+      const parksUrl =
+        "https://raw.githubusercontent.com/theozh2022/Trailblazer/main/nps-geo-boundary.json"
+      const forestsUrl =
+        "https://raw.githubusercontent.com/theozh2022/Trailblazer/main/national-forests-geo.json"
+
+      censusLayer = L.geoJSON(null, {
+        style: {
+          color: "#ffffff", // Set the boundary line color to white
+          fillColor: "#595cae", // Set the fill color
+          fillOpacity: 0.3, // Set the fill opacity
+          weight: 1, // Set the weight of the boundary line
+        },
+      }).addTo(map)
+
+      const parksLayer = L.geoJSON(null, {
+        style: {
+          color: "#f18973", // Set the boundary color to blue
+          fillColor: "#f18973", // Set the fill color to blue
+          fillOpacity: 0.5, // Set the fill opacity
+          weight: 1, // Set the weight of the boundary line
+        },
+      }).addTo(map)
+
+      const forestsLayer = L.geoJSON(null, {
+        style: {
+          color: "#0b8457", // Set the boundary color to blue
+          fillColor: "#0b8457", // Set the fill color to blue
+          fillOpacity: 0.5, // Set the fill opacity
+          weight: 1, // Set the weight of the boundary line
+        },
+      }).addTo(map)
+
+      fetch(mapUrl)
+        .then((response) => response.json())
+        .then((data) => censusLayer.addData(data))
+      fetch(parksUrl)
+        .then((response) => response.json())
+        .then((data) => parksLayer.addData(data))
+      fetch(forestsUrl)
+        .then((response) => response.json())
+        .then((data) => forestsLayer.addData(data))
+    </script>
+  </body>
+</html>
